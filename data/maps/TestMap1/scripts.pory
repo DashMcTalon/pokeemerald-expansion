@@ -3,7 +3,7 @@ mapscripts TestMap1_MapScripts {}
 script TestMap1_TestMapGreeter {
     lock
     faceplayer
-    msgbox("Hellllo!", MSGBOX_NPC)
+    msgbox("Hello there", MSGBOX_NPC)
     release
     end
 }

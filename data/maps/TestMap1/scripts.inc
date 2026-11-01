@@ -16,4 +16,4 @@ TestMap1_TestMapGreeter::
 
 TestMap1_TestMapGreeter_Text_0:
 # 6 "data/maps/TestMap1/scripts.pory"
-	.string "Hellllo!$"
+	.string "Hello there$"
