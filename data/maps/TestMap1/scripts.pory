@@ -7,3 +7,22 @@ script TestMap1_TestMapGreeter {
     release
     end
 }
+
+script TestMap1_Trainer_Joey {
+    trainerbattle_single(TRAINER_TEST_1, TestMap1_Text_JoeyIntro, TestMap1_Text_JoeyDefeat)
+    msgbox(TestMap1_Text_JoeyPost, MSGBOX_AUTOCLOSE)
+    end
+}
+
+text TestMap1_Text_JoeyIntro {
+    "My Rattata is in the top percentage\n"
+    "of all Rattata!"
+}
+
+text TestMap1_Text_JoeyDefeat {
+    "Aw, I lost!"
+}
+
+text TestMap1_Text_JoeyPost {
+    "You're pretty strong."
+}
