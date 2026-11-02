@@ -9333,6 +9333,16 @@
       "secondary_tileset": "gTileset_Petalburg",
       "border_filepath": "data/layouts/TestMap1/border.bin",
       "blockdata_filepath": "data/layouts/TestMap1/map.bin"
+    },
+    {
+      "id": "LAYOUT_TEST_MAP1_INTERIOR1",
+      "name": "TestMap1_Interior1_Layout",
+      "width": 8,
+      "height": 8,
+      "primary_tileset": "gTileset_General",
+      "secondary_tileset": "gTileset_GenericBuilding",
+      "border_filepath": "data/layouts/TestMap1_Interior1/border.bin",
+      "blockdata_filepath": "data/layouts/TestMap1_Interior1/map.bin"
     }
   ]
 }
