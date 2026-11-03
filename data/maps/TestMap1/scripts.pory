@@ -1,4 +1,8 @@
-mapscripts TestMap1_MapScripts {}
+mapscripts TestMap1_MapScripts {
+    MAP_SCRIPT_ON_TRANSITION {
+        special(MissionBoard_SetupSite)
+    }
+}
 
 script TestMap1_TestMapGreeter {
     lock

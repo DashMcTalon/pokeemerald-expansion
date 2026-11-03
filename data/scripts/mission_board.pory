@@ -1,0 +1,228 @@
+// The mission board sign. Mission data lives in src/mission_board.c.
+
+script MissionBoard_EventScript_Sign {
+    lockall
+    call(MissionBoard_EventScript_TryRankUps)
+    if (var(VAR_MISSION_ACTIVE) != MISSION_NONE) {
+        call(MissionBoard_EventScript_ActiveMenu)
+    } else {
+        call(MissionBoard_EventScript_ChooseMission)
+    }
+    releaseall
+    end
+}
+
+script(local) MissionBoard_EventScript_ChooseMission {
+    special(MissionBoard_RefillSlots)
+    special(MissionBoard_BufferRankStatus)
+    message("MISSION BOARD · {STR_VAR_1} Rank\nPoints: {STR_VAR_2}{STR_VAR_3}")
+    waitmessage
+
+    setvar(VAR_0x8004, 0)
+    while (var(VAR_0x8004) < MISSION_BOARD_SLOTS) {
+        specialvar(VAR_RESULT, MissionBoard_BufferSlotTitle)
+        if (var(VAR_RESULT) == TRUE) {
+            dynmultipush("{STR_VAR_1}", VAR_0x8004)
+        }
+        addvar(VAR_0x8004, 1)
+    }
+    dynmultipush("Exit", MISSION_BOARD_SLOTS)
+    dynmultistack(0, 0, FALSE, 4, FALSE, 0, DYN_MULTICHOICE_CB_NONE)
+    closemessage
+
+    if (var(VAR_RESULT) >= MISSION_BOARD_SLOTS) {
+        return
+    }
+
+    copyvar(VAR_0x8004, VAR_RESULT)
+    special(MissionBoard_BufferSlotDescription)
+    msgbox(gStringVar4, MSGBOX_DEFAULT)
+    special(MissionBoard_BufferSlotReward)
+    msgbox(gStringVar4, MSGBOX_DEFAULT)
+    msgbox("Accept this mission?", MSGBOX_YESNO)
+    if (var(VAR_RESULT) == YES) {
+        special(MissionBoard_AcceptSlot)
+        msgbox("Mission accepted!\nReturn here when it's done.", MSGBOX_DEFAULT)
+    }
+    closemessage
+    return
+}
+
+script(local) MissionBoard_EventScript_ActiveMenu {
+    special(MissionBoard_BufferActiveTitle)
+    message("Current mission:\n{STR_VAR_1}")
+    waitmessage
+    dynmultipush("Hand In", 0)
+    dynmultipush("Details", 1)
+    dynmultipush("Abandon", 2)
+    dynmultipush("Exit", 3)
+    dynmultistack(0, 0, FALSE, 4, FALSE, 0, DYN_MULTICHOICE_CB_NONE)
+    closemessage
+
+    switch (var(VAR_RESULT)) {
+        case 0:
+            call(MissionBoard_EventScript_HandIn)
+        case 1:
+            special(MissionBoard_BufferActiveDescription)
+            msgbox(gStringVar4, MSGBOX_DEFAULT)
+            special(MissionBoard_BufferActiveReward)
+            msgbox(gStringVar4, MSGBOX_DEFAULT)
+            closemessage
+        case 2:
+            msgbox("Abandon this mission?", MSGBOX_YESNO)
+            if (var(VAR_RESULT) == YES) {
+                special(MissionBoard_AbandonActive)
+                msgbox("Mission abandoned.", MSGBOX_DEFAULT)
+            }
+            closemessage
+    }
+    return
+}
+
+script(local) MissionBoard_EventScript_HandIn {
+    specialvar(VAR_RESULT, MissionBoard_GetActiveType)
+    if (var(VAR_RESULT) != MISSION_TYPE_CATCH_DELIVER) {
+        call(MissionBoard_EventScript_HandInItem)
+        return
+    }
+
+    specialvar(VAR_RESULT, MissionBoard_HasRewardSpace)
+    if (var(VAR_RESULT) == FALSE) {
+        msgbox("Your Bag has no room for the reward.\nMake some space and come back.", MSGBOX_DEFAULT)
+        closemessage
+        return
+    }
+
+    msgbox("Which Pokémon will you hand in?", MSGBOX_DEFAULT)
+    closemessage
+    special(ChoosePartyMon)
+    if (var(VAR_0x8004) >= PARTY_SIZE) {
+        return
+    }
+
+    specialvar(VAR_RESULT, MissionBoard_CheckDelivery)
+    switch (var(VAR_RESULT)) {
+        case DELIVERY_WRONG_SPECIES:
+            msgbox("This mission needs a {STR_VAR_1}.", MSGBOX_DEFAULT)
+        case DELIVERY_EGG:
+            msgbox("An Egg can't be handed in.", MSGBOX_DEFAULT)
+        case DELIVERY_HOLDING_ITEM:
+            msgbox("Take its held item first.\nThat item is yours to keep.", MSGBOX_DEFAULT)
+        case DELIVERY_LAST_HEALTHY_MON:
+            msgbox("You can't hand over your\nlast healthy Pokémon!", MSGBOX_DEFAULT)
+        case DELIVERY_OK:
+            msgbox("Hand over this {STR_VAR_1}?\nYou won't get it back.", MSGBOX_YESNO)
+            if (var(VAR_RESULT) == YES) {
+                special(MissionBoard_RemoveDeliveredMon)
+                call(MissionBoard_EventScript_Complete)
+            }
+    }
+    closemessage
+    return
+}
+
+script(local) MissionBoard_EventScript_HandInItem {
+    specialvar(VAR_RESULT, MissionBoard_CheckItemHandIn)
+    switch (var(VAR_RESULT)) {
+        case ITEM_HANDIN_NOT_YET:
+            msgbox("You haven't recovered the\n{STR_VAR_1} yet.", MSGBOX_DEFAULT)
+        case ITEM_HANDIN_MISSING:
+            msgbox("You don't have the {STR_VAR_1}\nin your Bag.", MSGBOX_DEFAULT)
+        case ITEM_HANDIN_NOT_DONE:
+            msgbox("You haven't finished this\nmission yet.", MSGBOX_DEFAULT)
+        case ITEM_HANDIN_OK:
+            specialvar(VAR_RESULT, MissionBoard_HasRewardSpace)
+            if (var(VAR_RESULT) == FALSE) {
+                msgbox("Your Bag has no room for the reward.\nMake some space and come back.", MSGBOX_DEFAULT)
+            } else {
+                specialvar(VAR_RESULT, MissionBoard_TakeDropItem)
+                if (var(VAR_RESULT) == TRUE) {
+                    msgbox("You handed over the {STR_VAR_1}.", MSGBOX_DEFAULT)
+                }
+                call(MissionBoard_EventScript_Complete)
+            }
+    }
+    closemessage
+    return
+}
+
+// The Pokémon standing at a mission site. Each map with a site runs
+// MissionBoard_SetupSite when it loads, which shows or hides this object.
+script MissionBoard_EventScript_Site {
+    lock
+    faceplayer
+    specialvar(VAR_RESULT, MissionBoard_PrepareSiteBattle)
+    if (var(VAR_RESULT) == FALSE) {
+        msgbox("It's holding the {STR_VAR_2}!\pYour Key Items pocket is full.\nMake room before you fight it.", MSGBOX_DEFAULT)
+        release
+        end
+    }
+    playmoncry(VAR_0x8005, CRY_MODE_ENCOUNTER)
+    msgbox(gStringVar4, MSGBOX_DEFAULT)
+    waitmoncry
+    closemessage
+    special(MissionBoard_StartSiteBattle)
+    specialvar(VAR_RESULT, MissionBoard_EndSiteBattle)
+    switch (var(VAR_RESULT)) {
+        case SITE_RESULT_DROP:
+            removeobject(VAR_LAST_TALKED)
+            msgbox("It dropped something!", MSGBOX_DEFAULT)
+            giveitem(VAR_0x8005, 1)
+            msgbox("Take it back to the mission board.", MSGBOX_DEFAULT)
+        case SITE_RESULT_CALMED:
+            removeobject(VAR_LAST_TALKED)
+            msgbox("The {STR_VAR_1} calmed down\nand wandered off.\pReport back to the mission board.", MSGBOX_DEFAULT)
+        case SITE_RESULT_CAUGHT:
+            removeobject(VAR_LAST_TALKED)
+            msgbox("Report your catch to the\nmission board.", MSGBOX_DEFAULT)
+        case SITE_RESULT_FAINTED:
+            removeobject(VAR_LAST_TALKED)
+            msgbox("The {STR_VAR_1} fainted and was\ncarried off by its friends.\pIt should be back soon.\nLeave the area and return.", MSGBOX_DEFAULT)
+        default:
+            msgbox("The {STR_VAR_1} is still here.\nTry again!", MSGBOX_DEFAULT)
+    }
+    release
+    end
+}
+
+script(local) MissionBoard_EventScript_Complete {
+    special(MissionBoard_CompleteActive)
+    playfanfare(MUS_LEVEL_UP)
+    message("Mission complete!\nYou earned ¥{STR_VAR_1} and {STR_VAR_2} points.")
+    waitmessage
+    waitfanfare
+    waitbuttonpress
+    if (var(VAR_0x8007) == TRUE) {
+        msgbox("A new mission has appeared\non the board!", MSGBOX_DEFAULT)
+    }
+    if (var(VAR_0x8005) != ITEM_NONE) {
+        giveitem(VAR_0x8005, VAR_0x8006)
+    }
+    call(MissionBoard_EventScript_TryRankUps)
+    return
+}
+
+// Ranks up as many times as the player's points allow, giving each rank's gift.
+script(local) MissionBoard_EventScript_TryRankUps {
+    while {
+        specialvar(VAR_RESULT, MissionBoard_TryRankUp)
+        if (var(VAR_RESULT) == RANK_UP_NONE) {
+            break
+        }
+        if (var(VAR_RESULT) == RANK_UP_BAG_FULL) {
+            msgbox("You've earned {STR_VAR_1} Rank!\pYour Bag has no room for the gift.\nMake space and check the board again.", MSGBOX_DEFAULT)
+            closemessage
+            break
+        }
+        playfanfare(MUS_OBTAIN_BADGE)
+        message("Rank up!\nYou're now {STR_VAR_1} Rank!")
+        waitmessage
+        waitfanfare
+        waitbuttonpress
+        if (var(VAR_0x8005) != ITEM_NONE) {
+            giveitem(VAR_0x8005, VAR_0x8006)
+        }
+        closemessage
+    }
+    return
+}

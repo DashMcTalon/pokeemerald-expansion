@@ -638,3 +638,25 @@ gSpecials::
 	def_special UpdateTrainerCardPhotoIcons
 	def_special StickerManGetBragFlags
 	def_special CheckAddCoins
+	def_special MissionBoard_RefillSlots
+	def_special MissionBoard_BufferSlotTitle
+	def_special MissionBoard_BufferSlotDescription
+	def_special MissionBoard_BufferSlotReward
+	def_special MissionBoard_AcceptSlot
+	def_special MissionBoard_BufferActiveTitle
+	def_special MissionBoard_BufferActiveDescription
+	def_special MissionBoard_BufferActiveReward
+	def_special MissionBoard_HasRewardSpace
+	def_special MissionBoard_CheckDelivery
+	def_special MissionBoard_RemoveDeliveredMon
+	def_special MissionBoard_CompleteActive
+	def_special MissionBoard_AbandonActive
+	def_special MissionBoard_BufferRankStatus
+	def_special MissionBoard_TryRankUp
+	def_special MissionBoard_GetActiveType
+	def_special MissionBoard_SetupSite
+	def_special MissionBoard_PrepareSiteBattle
+	def_special MissionBoard_EndSiteBattle
+	def_special MissionBoard_CheckItemHandIn
+	def_special MissionBoard_TakeDropItem
+	def_special MissionBoard_StartSiteBattle, waitstate=1

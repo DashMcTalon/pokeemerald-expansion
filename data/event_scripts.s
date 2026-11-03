@@ -39,6 +39,7 @@
 #include "constants/game_stat.h"
 #include "constants/item.h"
 #include "constants/items.h"
+#include "constants/mission_board.h"
 #include "constants/heal_locations.h"
 #include "constants/layouts.h"
 #include "constants/lilycove_lady.h"
@@ -1738,6 +1739,7 @@ EventScript_PalletTown_PlayersHouse_2F_TurnOnPC::
 	.include "data/scripts/battle_frontier.inc"
 	.include "data/scripts/apricorn_tree.inc"
 	.include "data/scripts/wild_encounter.inc"
+	.include "data/scripts/mission_board.inc"
 
 	.include "data/maps/TestMap1/scripts.inc"
 

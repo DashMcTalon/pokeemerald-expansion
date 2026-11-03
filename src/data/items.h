@@ -16099,6 +16099,23 @@ const struct ItemInfo gItemsInfo[] =
         .iconPic = gItemIcon_PokeshiDoll,
         .iconPalette = gItemIconPalette_PokeshiDoll,
     },
+
+    // Mission board key items: they can't be tossed or sold.
+    [ITEM_LOST_SATCHEL] =
+    {
+        .name = ITEM_NAME("Lost Satchel"),
+        .price = 0,
+        .description = COMPOUND_STRING(
+            "A hiker's satchel\n"
+            "taken by a wild\n"
+            "Pokémon. Return it."),
+        .importance = 1,
+        .pocket = POCKET_KEY_ITEMS,
+        .type = ITEM_USE_BAG_MENU,
+        .fieldUseFunc = ItemUseOutOfBattle_CannotUse,
+        .iconPic = gItemIcon_Parcel,
+        .iconPalette = gItemIconPalette_Parcel,
+    },
 };
 
 #undef ITEM_NAME
