@@ -163,6 +163,13 @@ script MissionBoard_EventScript_Site {
     closemessage
     special(MissionBoard_StartSiteBattle)
     specialvar(VAR_RESULT, MissionBoard_EndSiteBattle)
+    // Hordes: keep fighting wave after wave, with no chance to heal.
+    while (var(VAR_RESULT) == SITE_RESULT_WAVE_CLEARED) {
+        msgbox("Wave cleared! Here comes the next one!\nWave {STR_VAR_2} of {STR_VAR_3}!", MSGBOX_DEFAULT)
+        closemessage
+        special(MissionBoard_StartSiteBattle)
+        specialvar(VAR_RESULT, MissionBoard_EndSiteBattle)
+    }
     switch (var(VAR_RESULT)) {
         case SITE_RESULT_DROP:
             removeobject(VAR_LAST_TALKED)
@@ -175,6 +182,9 @@ script MissionBoard_EventScript_Site {
         case SITE_RESULT_CAUGHT:
             removeobject(VAR_LAST_TALKED)
             msgbox("Report your catch to the\nmission board.", MSGBOX_DEFAULT)
+        case SITE_RESULT_HORDE_DONE:
+            removeobject(VAR_LAST_TALKED)
+            msgbox("The horde scattered!\nReport back to the mission board.", MSGBOX_DEFAULT)
         case SITE_RESULT_FAINTED:
             removeobject(VAR_LAST_TALKED)
             msgbox("The {STR_VAR_1} fainted and was\ncarried off by its friends.\pIt should be back soon.\nLeave the area and return.", MSGBOX_DEFAULT)

@@ -329,20 +329,26 @@ MissionBoard_EventScript_Site::
 	special MissionBoard_StartSiteBattle
 # 165 "data/scripts/mission_board.pory"
 	specialvar VAR_RESULT, MissionBoard_EndSiteBattle
-# 166 "data/scripts/mission_board.pory"
-	switch VAR_RESULT
+MissionBoard_EventScript_Site_5:
 # 167 "data/scripts/mission_board.pory"
-	case SITE_RESULT_DROP, MissionBoard_EventScript_Site_6
-# 172 "data/scripts/mission_board.pory"
-	case SITE_RESULT_CALMED, MissionBoard_EventScript_Site_7
-# 175 "data/scripts/mission_board.pory"
-	case SITE_RESULT_CAUGHT, MissionBoard_EventScript_Site_8
-# 178 "data/scripts/mission_board.pory"
-	case SITE_RESULT_FAINTED, MissionBoard_EventScript_Site_9
+	compare VAR_RESULT, SITE_RESULT_WAVE_CLEARED
+	goto_if_eq MissionBoard_EventScript_Site_6
+# 173 "data/scripts/mission_board.pory"
+	switch VAR_RESULT
+# 174 "data/scripts/mission_board.pory"
+	case SITE_RESULT_DROP, MissionBoard_EventScript_Site_10
+# 179 "data/scripts/mission_board.pory"
+	case SITE_RESULT_CALMED, MissionBoard_EventScript_Site_11
 # 182 "data/scripts/mission_board.pory"
-	msgbox MissionBoard_EventScript_Site_Text_6, MSGBOX_DEFAULT
-MissionBoard_EventScript_Site_4:
-# 184 "data/scripts/mission_board.pory"
+	case SITE_RESULT_CAUGHT, MissionBoard_EventScript_Site_12
+# 185 "data/scripts/mission_board.pory"
+	case SITE_RESULT_HORDE_DONE, MissionBoard_EventScript_Site_13
+# 188 "data/scripts/mission_board.pory"
+	case SITE_RESULT_FAINTED, MissionBoard_EventScript_Site_14
+# 192 "data/scripts/mission_board.pory"
+	msgbox MissionBoard_EventScript_Site_Text_8, MSGBOX_DEFAULT
+MissionBoard_EventScript_Site_8:
+# 194 "data/scripts/mission_board.pory"
 	release
 	end
 
@@ -355,98 +361,116 @@ MissionBoard_EventScript_Site_2:
 
 MissionBoard_EventScript_Site_6:
 # 168 "data/scripts/mission_board.pory"
-	removeobject VAR_LAST_TALKED
-# 169 "data/scripts/mission_board.pory"
 	msgbox MissionBoard_EventScript_Site_Text_1, MSGBOX_DEFAULT
+# 169 "data/scripts/mission_board.pory"
+	closemessage
 # 170 "data/scripts/mission_board.pory"
-	giveitem VAR_0x8005, 1
+	special MissionBoard_StartSiteBattle
 # 171 "data/scripts/mission_board.pory"
-	msgbox MissionBoard_EventScript_Site_Text_2, MSGBOX_DEFAULT
-	goto MissionBoard_EventScript_Site_4
+	specialvar VAR_RESULT, MissionBoard_EndSiteBattle
+	goto MissionBoard_EventScript_Site_5
 
-MissionBoard_EventScript_Site_7:
-# 173 "data/scripts/mission_board.pory"
+MissionBoard_EventScript_Site_10:
+# 175 "data/scripts/mission_board.pory"
 	removeobject VAR_LAST_TALKED
-# 174 "data/scripts/mission_board.pory"
-	msgbox MissionBoard_EventScript_Site_Text_3, MSGBOX_DEFAULT
-	goto MissionBoard_EventScript_Site_4
-
-MissionBoard_EventScript_Site_8:
 # 176 "data/scripts/mission_board.pory"
-	removeobject VAR_LAST_TALKED
+	msgbox MissionBoard_EventScript_Site_Text_2, MSGBOX_DEFAULT
 # 177 "data/scripts/mission_board.pory"
-	msgbox MissionBoard_EventScript_Site_Text_4, MSGBOX_DEFAULT
-	goto MissionBoard_EventScript_Site_4
+	giveitem VAR_0x8005, 1
+# 178 "data/scripts/mission_board.pory"
+	msgbox MissionBoard_EventScript_Site_Text_3, MSGBOX_DEFAULT
+	goto MissionBoard_EventScript_Site_8
 
-MissionBoard_EventScript_Site_9:
-# 179 "data/scripts/mission_board.pory"
-	removeobject VAR_LAST_TALKED
+MissionBoard_EventScript_Site_11:
 # 180 "data/scripts/mission_board.pory"
+	removeobject VAR_LAST_TALKED
+# 181 "data/scripts/mission_board.pory"
+	msgbox MissionBoard_EventScript_Site_Text_4, MSGBOX_DEFAULT
+	goto MissionBoard_EventScript_Site_8
+
+MissionBoard_EventScript_Site_12:
+# 183 "data/scripts/mission_board.pory"
+	removeobject VAR_LAST_TALKED
+# 184 "data/scripts/mission_board.pory"
 	msgbox MissionBoard_EventScript_Site_Text_5, MSGBOX_DEFAULT
-	goto MissionBoard_EventScript_Site_4
+	goto MissionBoard_EventScript_Site_8
+
+MissionBoard_EventScript_Site_13:
+# 186 "data/scripts/mission_board.pory"
+	removeobject VAR_LAST_TALKED
+# 187 "data/scripts/mission_board.pory"
+	msgbox MissionBoard_EventScript_Site_Text_6, MSGBOX_DEFAULT
+	goto MissionBoard_EventScript_Site_8
+
+MissionBoard_EventScript_Site_14:
+# 189 "data/scripts/mission_board.pory"
+	removeobject VAR_LAST_TALKED
+# 190 "data/scripts/mission_board.pory"
+	msgbox MissionBoard_EventScript_Site_Text_7, MSGBOX_DEFAULT
+	goto MissionBoard_EventScript_Site_8
 
 
 MissionBoard_EventScript_Complete:
-# 189 "data/scripts/mission_board.pory"
+# 199 "data/scripts/mission_board.pory"
 	special MissionBoard_CompleteActive
-# 190 "data/scripts/mission_board.pory"
+# 200 "data/scripts/mission_board.pory"
 	playfanfare MUS_LEVEL_UP
-# 191 "data/scripts/mission_board.pory"
+# 201 "data/scripts/mission_board.pory"
 	message MissionBoard_EventScript_Complete_Text_0
-# 192 "data/scripts/mission_board.pory"
+# 202 "data/scripts/mission_board.pory"
 	waitmessage
-# 193 "data/scripts/mission_board.pory"
+# 203 "data/scripts/mission_board.pory"
 	waitfanfare
-# 194 "data/scripts/mission_board.pory"
+# 204 "data/scripts/mission_board.pory"
 	waitbuttonpress
-# 195 "data/scripts/mission_board.pory"
+# 205 "data/scripts/mission_board.pory"
 	compare VAR_0x8007, TRUE
 	goto_if_eq MissionBoard_EventScript_Complete_2
 MissionBoard_EventScript_Complete_1:
-# 198 "data/scripts/mission_board.pory"
+# 208 "data/scripts/mission_board.pory"
 	compare VAR_0x8005, ITEM_NONE
 	goto_if_ne MissionBoard_EventScript_Complete_5
 MissionBoard_EventScript_Complete_4:
-# 201 "data/scripts/mission_board.pory"
+# 211 "data/scripts/mission_board.pory"
 	call MissionBoard_EventScript_TryRankUps
 	return
 
 MissionBoard_EventScript_Complete_2:
-# 196 "data/scripts/mission_board.pory"
+# 206 "data/scripts/mission_board.pory"
 	msgbox MissionBoard_EventScript_Complete_Text_1, MSGBOX_DEFAULT
 	goto MissionBoard_EventScript_Complete_1
 
 MissionBoard_EventScript_Complete_5:
-# 199 "data/scripts/mission_board.pory"
+# 209 "data/scripts/mission_board.pory"
 	giveitem VAR_0x8005, VAR_0x8006
 	goto MissionBoard_EventScript_Complete_4
 
 
 MissionBoard_EventScript_TryRankUps:
 MissionBoard_EventScript_TryRankUps_2:
-# 208 "data/scripts/mission_board.pory"
+# 218 "data/scripts/mission_board.pory"
 	specialvar VAR_RESULT, MissionBoard_TryRankUp
-# 209 "data/scripts/mission_board.pory"
+# 219 "data/scripts/mission_board.pory"
 	compare VAR_RESULT, RANK_UP_NONE
 	goto_if_eq MissionBoard_EventScript_TryRankUps_5
-# 212 "data/scripts/mission_board.pory"
+# 222 "data/scripts/mission_board.pory"
 	compare VAR_RESULT, RANK_UP_BAG_FULL
 	goto_if_eq MissionBoard_EventScript_TryRankUps_8
-# 217 "data/scripts/mission_board.pory"
+# 227 "data/scripts/mission_board.pory"
 	playfanfare MUS_OBTAIN_BADGE
-# 218 "data/scripts/mission_board.pory"
+# 228 "data/scripts/mission_board.pory"
 	message MissionBoard_EventScript_TryRankUps_Text_1
-# 219 "data/scripts/mission_board.pory"
+# 229 "data/scripts/mission_board.pory"
 	waitmessage
-# 220 "data/scripts/mission_board.pory"
+# 230 "data/scripts/mission_board.pory"
 	waitfanfare
-# 221 "data/scripts/mission_board.pory"
+# 231 "data/scripts/mission_board.pory"
 	waitbuttonpress
-# 222 "data/scripts/mission_board.pory"
+# 232 "data/scripts/mission_board.pory"
 	compare VAR_0x8005, ITEM_NONE
 	goto_if_ne MissionBoard_EventScript_TryRankUps_11
 MissionBoard_EventScript_TryRankUps_10:
-# 225 "data/scripts/mission_board.pory"
+# 235 "data/scripts/mission_board.pory"
 	closemessage
 	goto MissionBoard_EventScript_TryRankUps_2
 
@@ -457,14 +481,14 @@ MissionBoard_EventScript_TryRankUps_5:
 	goto MissionBoard_EventScript_TryRankUps_1
 
 MissionBoard_EventScript_TryRankUps_8:
-# 213 "data/scripts/mission_board.pory"
+# 223 "data/scripts/mission_board.pory"
 	msgbox MissionBoard_EventScript_TryRankUps_Text_0, MSGBOX_DEFAULT
-# 214 "data/scripts/mission_board.pory"
+# 224 "data/scripts/mission_board.pory"
 	closemessage
 	goto MissionBoard_EventScript_TryRankUps_1
 
 MissionBoard_EventScript_TryRankUps_11:
-# 223 "data/scripts/mission_board.pory"
+# 233 "data/scripts/mission_board.pory"
 	giveitem VAR_0x8005, VAR_0x8006
 	goto MissionBoard_EventScript_TryRankUps_10
 
@@ -562,41 +586,49 @@ MissionBoard_EventScript_Site_Text_0:
 	.string "It's holding the {STR_VAR_2}!\pYour Key Items pocket is full.\nMake room before you fight it.$"
 
 MissionBoard_EventScript_Site_Text_1:
-# 169 "data/scripts/mission_board.pory"
-	.string "It dropped something!$"
+# 168 "data/scripts/mission_board.pory"
+	.string "Wave cleared! Here comes the next one!\nWave {STR_VAR_2} of {STR_VAR_3}!$"
 
 MissionBoard_EventScript_Site_Text_2:
-# 171 "data/scripts/mission_board.pory"
-	.string "Take it back to the mission board.$"
+# 176 "data/scripts/mission_board.pory"
+	.string "It dropped something!$"
 
 MissionBoard_EventScript_Site_Text_3:
-# 174 "data/scripts/mission_board.pory"
-	.string "The {STR_VAR_1} calmed down\nand wandered off.\pReport back to the mission board.$"
+# 178 "data/scripts/mission_board.pory"
+	.string "Take it back to the mission board.$"
 
 MissionBoard_EventScript_Site_Text_4:
-# 177 "data/scripts/mission_board.pory"
-	.string "Report your catch to the\nmission board.$"
+# 181 "data/scripts/mission_board.pory"
+	.string "The {STR_VAR_1} calmed down\nand wandered off.\pReport back to the mission board.$"
 
 MissionBoard_EventScript_Site_Text_5:
-# 180 "data/scripts/mission_board.pory"
-	.string "The {STR_VAR_1} fainted and was\ncarried off by its friends.\pIt should be back soon.\nLeave the area and return.$"
+# 184 "data/scripts/mission_board.pory"
+	.string "Report your catch to the\nmission board.$"
 
 MissionBoard_EventScript_Site_Text_6:
-# 182 "data/scripts/mission_board.pory"
+# 187 "data/scripts/mission_board.pory"
+	.string "The horde scattered!\nReport back to the mission board.$"
+
+MissionBoard_EventScript_Site_Text_7:
+# 190 "data/scripts/mission_board.pory"
+	.string "The {STR_VAR_1} fainted and was\ncarried off by its friends.\pIt should be back soon.\nLeave the area and return.$"
+
+MissionBoard_EventScript_Site_Text_8:
+# 192 "data/scripts/mission_board.pory"
 	.string "The {STR_VAR_1} is still here.\nTry again!$"
 
 MissionBoard_EventScript_Complete_Text_0:
-# 191 "data/scripts/mission_board.pory"
+# 201 "data/scripts/mission_board.pory"
 	.string "Mission complete!\nYou earned ¥{STR_VAR_1} and {STR_VAR_2} points.$"
 
 MissionBoard_EventScript_Complete_Text_1:
-# 196 "data/scripts/mission_board.pory"
+# 206 "data/scripts/mission_board.pory"
 	.string "A new mission has appeared\non the board!$"
 
 MissionBoard_EventScript_TryRankUps_Text_0:
-# 213 "data/scripts/mission_board.pory"
+# 223 "data/scripts/mission_board.pory"
 	.string "You've earned {STR_VAR_1} Rank!\pYour Bag has no room for the gift.\nMake space and check the board again.$"
 
 MissionBoard_EventScript_TryRankUps_Text_1:
-# 218 "data/scripts/mission_board.pory"
+# 228 "data/scripts/mission_board.pory"
 	.string "Rank up!\nYou're now {STR_VAR_1} Rank!$"

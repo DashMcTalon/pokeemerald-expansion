@@ -12,7 +12,8 @@
 #define MISSION_RECOVER_SATCHEL   6
 #define MISSION_CRAZED_PIKACHU    7
 #define MISSION_CALM_PIKACHU      8
-#define MISSIONS_COUNT            9
+#define MISSION_HORDE_BUGS        9
+#define MISSIONS_COUNT            10
 
 // One FLAG_MISSION_CLEARED flag exists for each mission, so IDs stop at 64.
 #define MAX_MISSIONS              64
@@ -23,6 +24,7 @@
 #define MISSION_TYPE_ITEM_DROP     1
 #define MISSION_TYPE_CRAZED        2 // Boosted boss at a mission site; can't be caught.
 #define MISSION_TYPE_CALM_CATCH    3 // Unlocked by a crazed mission; catch it at the site.
+#define MISSION_TYPE_HORDE         4 // Waves of double battles at a mission site, with no healing between.
 
 #define MISSION_STATE_NONE         0
 #define MISSION_STATE_IN_PROGRESS  1
@@ -40,6 +42,8 @@
 #define SITE_RESULT_CALMED         2 // Crazed Pokémon beaten.
 #define SITE_RESULT_CAUGHT         3 // Calm Pokémon caught.
 #define SITE_RESULT_FAINTED        4 // Calm Pokémon fainted; it comes back later.
+#define SITE_RESULT_WAVE_CLEARED   5 // Horde wave won; more waves left.
+#define SITE_RESULT_HORDE_DONE     6 // Last horde wave won.
 
 // Ranks. Points needed and rank-up gifts are in sRanks in src/mission_board.c.
 #define MISSION_RANK_ROOKIE        0

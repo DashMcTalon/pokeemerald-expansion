@@ -27,6 +27,8 @@ struct Mission
     u8 type;
     u8 requiredRank;
     enum Species species; // The Pokémon to deliver, or the one at the mission site.
+    enum Species species2; // Hordes: the second Pokémon in each wave (SPECIES_NONE = same as species).
+    u8 waves; // Hordes: how many double battles in a row.
     u8 level; // Mission site Pokémon only.
     u16 map; // Map with the mission site (MAP_ constant). Mission site missions only.
     enum Item dropItem; // Item-drop missions: the key item the site Pokémon drops.
@@ -193,6 +195,26 @@ static const struct Mission sMissions[MISSIONS_COUNT] =
         .rewardItem = ITEM_NONE,
         .rewardPoints = 20,
     },
+    [MISSION_HORDE_BUGS] =
+    {
+        .title = COMPOUND_STRING("Bug Swarm"),
+        .description = COMPOUND_STRING(
+            "A swarm of {STR_VAR_1} is chewing\n"
+            "up the test route!\p"
+            "Fight off every wave. There's\n"
+            "no time to heal between waves!"),
+        .type = MISSION_TYPE_HORDE,
+        .requiredRank = MISSION_RANK_BRONZE,
+        .species = SPECIES_NINCADA,
+        .species2 = SPECIES_HERACROSS,
+        .waves = 3,
+        .level = 6,
+        .map = MAP_TEST_MAP1,
+        .rewardMoney = 2500,
+        .rewardItem = ITEM_GREAT_BALL,
+        .rewardItemQuantity = 3,
+        .rewardPoints = 25,
+    },
 };
 
 STATIC_ASSERT(MISSIONS_COUNT <= MAX_MISSIONS + 1, TooManyMissions);
@@ -348,6 +370,13 @@ static bool32 UnlocksNewMission(u32 clearedMissionId)
             return TRUE;
     }
     return FALSE;
+}
+
+// {STR_VAR_2} = the wave the player is on, {STR_VAR_3} = total waves.
+static void BufferHordeWave(const struct Mission *mission)
+{
+    ConvertIntToDecimalStringN(gStringVar2, VarGet(VAR_MISSION_PROGRESS) + 1, STR_CONV_MODE_LEFT_ALIGN, 3);
+    ConvertIntToDecimalStringN(gStringVar3, mission->waves, STR_CONV_MODE_LEFT_ALIGN, 3);
 }
 
 // Makes the crazed Pokémon tougher: perfect IVs, its mission moves, and
@@ -650,6 +679,10 @@ u16 MissionBoard_PrepareSiteBattle(void)
     case MISSION_TYPE_CALM_CATCH:
         StringExpandPlaceholders(gStringVar4, COMPOUND_STRING("It's the {STR_VAR_1} you calmed down.\nIt looks gentle now."));
         break;
+    case MISSION_TYPE_HORDE:
+        BufferHordeWave(mission);
+        StringExpandPlaceholders(gStringVar4, COMPOUND_STRING("A horde of {STR_VAR_1} attacks!\nWave {STR_VAR_2} of {STR_VAR_3}!"));
+        break;
     default:
         StringExpandPlaceholders(gStringVar4, COMPOUND_STRING("It's the {STR_VAR_1} from the mission!\nIt's holding the {STR_VAR_2}!"));
         break;
@@ -663,6 +696,15 @@ void MissionBoard_StartSiteBattle(void)
 
     if (mission == NULL)
         return;
+
+    if (mission->type == MISSION_TYPE_HORDE)
+    {
+        enum Species species2 = (mission->species2 != SPECIES_NONE) ? mission->species2 : mission->species;
+
+        CreateScriptedDoubleWildMon(mission->species, mission->level, ITEM_NONE, species2, mission->level, ITEM_NONE);
+        BattleSetup_StartScriptedDoubleWildBattle();
+        return;
+    }
 
     CreateScriptedWildMon(mission->species, mission->level, ITEM_NONE);
     if (mission->type == MISSION_TYPE_CRAZED)
@@ -706,6 +748,19 @@ u16 MissionBoard_EndSiteBattle(void)
             result = SITE_RESULT_CAUGHT;
         else if (beaten)
             return SITE_RESULT_FAINTED; // Mission continues; it's back next time the map loads.
+        break;
+    case MISSION_TYPE_HORDE:
+        // Catching one of the pair also ends the wave, so it counts too.
+        if (beaten || caught)
+        {
+            VarSet(VAR_MISSION_PROGRESS, VarGet(VAR_MISSION_PROGRESS) + 1);
+            if (VarGet(VAR_MISSION_PROGRESS) < mission->waves)
+            {
+                BufferHordeWave(mission);
+                return SITE_RESULT_WAVE_CLEARED; // Saved, so a blackout or running away keeps it.
+            }
+            result = SITE_RESULT_HORDE_DONE;
+        }
         break;
     }
 
