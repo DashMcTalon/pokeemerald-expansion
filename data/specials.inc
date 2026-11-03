@@ -659,4 +659,10 @@ gSpecials::
 	def_special MissionBoard_EndSiteBattle
 	def_special MissionBoard_CheckItemHandIn
 	def_special MissionBoard_TakeDropItem
+	def_special MissionBoard_IsLegendaryBoardOpen
+	def_special MissionBoard_FindNextLegendaryMission
+	def_special MissionBoard_CountLegendaryMissions
+	def_special MissionBoard_BufferIdDescription
+	def_special MissionBoard_BufferIdReward
+	def_special MissionBoard_AcceptId
 	def_special MissionBoard_StartSiteBattle, waitstate=1

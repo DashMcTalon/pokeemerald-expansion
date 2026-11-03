@@ -23,5 +23,11 @@ void MissionBoard_StartSiteBattle(void);
 u16 MissionBoard_EndSiteBattle(void);
 u16 MissionBoard_CheckItemHandIn(void);
 u16 MissionBoard_TakeDropItem(void);
+u16 MissionBoard_IsLegendaryBoardOpen(void);
+u16 MissionBoard_FindNextLegendaryMission(void);
+u16 MissionBoard_CountLegendaryMissions(void);
+void MissionBoard_BufferIdDescription(void);
+void MissionBoard_BufferIdReward(void);
+void MissionBoard_AcceptId(void);
 
 #endif // GUARD_MISSION_BOARD_H

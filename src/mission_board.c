@@ -25,6 +25,7 @@ struct Mission
     const u8 *title; // Keep to about 16 characters so it fits in the board menu.
     const u8 *description; // {STR_VAR_1} = species name, {STR_VAR_2} = drop item name.
     u8 type;
+    u8 board; // MISSION_BOARD_MAIN (the default) or MISSION_BOARD_LEGENDARY.
     u8 requiredRank;
     enum Species species; // The Pokémon to deliver, or the one at the mission site.
     enum Species species2; // Hordes: the second Pokémon in each wave (SPECIES_NONE = same as species).
@@ -34,7 +35,8 @@ struct Mission
     enum Item dropItem; // Item-drop missions: the key item the site Pokémon drops.
     enum Move moves[MAX_MON_MOVES]; // Crazed missions: leave empty for its normal moves.
     s8 statBoosts[NUM_BATTLE_STATS]; // Crazed missions: stages raised at battle start, e.g. [STAT_SPEED] = 1. Evasion isn't supported.
-    u16 requiredMission; // Only offered after this mission is cleared (MISSION_NONE = no requirement).
+    u16 requiredMissions[MAX_REQUIRED_MISSIONS]; // Only offered once all of these are cleared, in any order.
+    u16 requiredFlag; // Only offered once this flag is set, e.g. a story event (0 = no requirement).
     bool8 oneTime; // Never offered again once cleared.
     u32 rewardMoney;
     enum Item rewardItem; // ITEM_NONE for no item.
@@ -189,7 +191,7 @@ static const struct Mission sMissions[MISSIONS_COUNT] =
         .species = SPECIES_PIKACHU,
         .level = 10,
         .map = MAP_TEST_MAP1,
-        .requiredMission = MISSION_CRAZED_PIKACHU,
+        .requiredMissions = { MISSION_CRAZED_PIKACHU },
         .oneTime = TRUE,
         .rewardMoney = 1000,
         .rewardItem = ITEM_NONE,
@@ -215,6 +217,82 @@ static const struct Mission sMissions[MISSIONS_COUNT] =
         .rewardItemQuantity = 3,
         .rewardPoints = 25,
     },
+
+    // ---- Legendary Board placeholders for testing. Replace with your real missions. ----
+    // Switched on and off by MISSION_ENABLE_TEST_LEGENDARIES in include/constants/mission_board.h.
+#if MISSION_ENABLE_TEST_LEGENDARIES
+
+    // A legendary you can go after right away.
+    [MISSION_TEST_LEGEND_DIRECT] =
+    {
+        .title = COMPOUND_STRING("Test: Entei"),
+        .description = COMPOUND_STRING(
+            "PLACEHOLDER: An {STR_VAR_1} has been\n"
+            "seen on the test route.\p"
+            "Catch it before it runs off!"),
+        .type = MISSION_TYPE_LEGENDARY,
+        .board = MISSION_BOARD_LEGENDARY,
+        .species = SPECIES_ENTEI,
+        .level = 80,
+        .map = MAP_TEST_MAP1,
+        .oneTime = TRUE,
+        .rewardMoney = 20000,
+        .rewardPoints = 100,
+    },
+    // Two themed missions that must both be cleared to unlock the chained legendary.
+    [MISSION_TEST_LEGEND_STEP_1] =
+    {
+        .title = COMPOUND_STRING("Test: Sea Omen"),
+        .description = COMPOUND_STRING(
+            "PLACEHOLDER: Flocks of {STR_VAR_1}\n"
+            "are fleeing something at sea.\p"
+            "Drive back the panicked waves."),
+        .type = MISSION_TYPE_HORDE,
+        .board = MISSION_BOARD_LEGENDARY,
+        .species = SPECIES_WINGULL,
+        .waves = 2,
+        .level = 6,
+        .map = MAP_TEST_MAP1,
+        .oneTime = TRUE,
+        .rewardMoney = 10000,
+        .rewardPoints = 50,
+    },
+    [MISSION_TEST_LEGEND_STEP_2] =
+    {
+        .title = COMPOUND_STRING("Test: Wild Tide"),
+        .description = COMPOUND_STRING(
+            "PLACEHOLDER: A crazed {STR_VAR_1}\n"
+            "senses a great power waking.\p"
+            "Calm it down."),
+        .type = MISSION_TYPE_CRAZED,
+        .board = MISSION_BOARD_LEGENDARY,
+        .species = SPECIES_MAGIKARP,
+        .level = 7,
+        .map = MAP_TEST_MAP1,
+        .statBoosts = { [STAT_DEF] = 1 },
+        .oneTime = TRUE,
+        .rewardMoney = 10000,
+        .rewardPoints = 50,
+    },
+    // Unlocks once both themed missions above are cleared.
+    [MISSION_TEST_LEGEND_CHAINED] =
+    {
+        .title = COMPOUND_STRING("Test: Lugia"),
+        .description = COMPOUND_STRING(
+            "PLACEHOLDER: The sea has gone still.\n"
+            "{STR_VAR_1} has surfaced at last!\p"
+            "This is your chance to catch it."),
+        .type = MISSION_TYPE_LEGENDARY,
+        .board = MISSION_BOARD_LEGENDARY,
+        .species = SPECIES_LUGIA,
+        .level = 100,
+        .map = MAP_TEST_MAP1,
+        .requiredMissions = { MISSION_TEST_LEGEND_STEP_1, MISSION_TEST_LEGEND_STEP_2 },
+        .oneTime = TRUE,
+        .rewardMoney = 30000,
+        .rewardPoints = 100,
+    },
+#endif
 };
 
 STATIC_ASSERT(MISSIONS_COUNT <= MAX_MISSIONS + 1, TooManyMissions);
@@ -227,7 +305,8 @@ static u16 GetSlotMissionId(u32 slot)
 
 static const struct Mission *GetValidMission(u32 missionId)
 {
-    if (missionId == MISSION_NONE || missionId >= MISSIONS_COUNT)
+    // A switched-off mission's row is empty, so it has no title.
+    if (missionId == MISSION_NONE || missionId >= MISSIONS_COUNT || sMissions[missionId].title == NULL)
         return NULL;
     return &sMissions[missionId];
 }
@@ -273,15 +352,44 @@ static bool32 IsMissionOnBoard(u32 missionId)
     return FALSE;
 }
 
-static bool32 CanOfferMission(u32 missionId, bool32 onlyUncleared)
+// TRUE once the mission's required missions and story flag are all done.
+static bool32 AreUnlockRequirementsMet(const struct Mission *mission)
+{
+    u32 i;
+
+    for (i = 0; i < MAX_REQUIRED_MISSIONS; i++)
+    {
+        if (mission->requiredMissions[i] != MISSION_NONE && !IsMissionCleared(mission->requiredMissions[i]))
+            return FALSE;
+    }
+    if (mission->requiredFlag != 0 && !FlagGet(mission->requiredFlag))
+        return FALSE;
+    return TRUE;
+}
+
+// TRUE if the mission can be offered on the board it belongs to right now.
+static bool32 IsMissionAvailable(u32 missionId)
 {
     const struct Mission *mission = &sMissions[missionId];
 
+    if (mission->title == NULL) // Switched off
+        return FALSE;
     if (mission->requiredRank > GetCurrentRank())
         return FALSE;
-    if (mission->requiredMission != MISSION_NONE && !IsMissionCleared(mission->requiredMission))
+    if (!AreUnlockRequirementsMet(mission))
         return FALSE;
     if (mission->oneTime && IsMissionCleared(missionId))
+        return FALSE;
+    if (missionId == VarGet(VAR_MISSION_ACTIVE))
+        return FALSE;
+    return TRUE;
+}
+
+static bool32 CanOfferMission(u32 missionId, bool32 onlyUncleared)
+{
+    if (sMissions[missionId].board != MISSION_BOARD_MAIN)
+        return FALSE;
+    if (!IsMissionAvailable(missionId))
         return FALSE;
     if (IsMissionOnBoard(missionId))
         return FALSE;
@@ -359,17 +467,33 @@ static bool32 UsesMissionSite(const struct Mission *mission)
     return mission->type != MISSION_TYPE_CATCH_DELIVER;
 }
 
-// TRUE if clearing this mission makes a new mission available.
+// TRUE if clearing this mission was the last thing another mission needed.
 static bool32 UnlocksNewMission(u32 clearedMissionId)
 {
-    u32 missionId;
+    u32 missionId, i;
 
     for (missionId = MISSION_NONE + 1; missionId < MISSIONS_COUNT; missionId++)
     {
-        if (sMissions[missionId].requiredMission == clearedMissionId && !IsMissionCleared(missionId))
-            return TRUE;
+        const struct Mission *mission = &sMissions[missionId];
+
+        if (IsMissionCleared(missionId) || !AreUnlockRequirementsMet(mission))
+            continue;
+        for (i = 0; i < MAX_REQUIRED_MISSIONS; i++)
+        {
+            if (mission->requiredMissions[i] == clearedMissionId)
+                return TRUE;
+        }
     }
     return FALSE;
+}
+
+static u32 GetSiteMonLevel(const struct Mission *mission)
+{
+#if MISSION_LEGENDARY_TEST_LEVELS
+    if (mission->type == MISSION_TYPE_LEGENDARY)
+        return 5 + Random() % 3;
+#endif
+    return mission->level;
 }
 
 // {STR_VAR_2} = the wave the player is on, {STR_VAR_3} = total waves.
@@ -683,6 +807,9 @@ u16 MissionBoard_PrepareSiteBattle(void)
         BufferHordeWave(mission);
         StringExpandPlaceholders(gStringVar4, COMPOUND_STRING("A horde of {STR_VAR_1} attacks!\nWave {STR_VAR_2} of {STR_VAR_3}!"));
         break;
+    case MISSION_TYPE_LEGENDARY:
+        StringExpandPlaceholders(gStringVar4, COMPOUND_STRING("A powerful aura fills the air...\pIt's the legendary {STR_VAR_1}!"));
+        break;
     default:
         StringExpandPlaceholders(gStringVar4, COMPOUND_STRING("It's the {STR_VAR_1} from the mission!\nIt's holding the {STR_VAR_2}!"));
         break;
@@ -703,6 +830,13 @@ void MissionBoard_StartSiteBattle(void)
 
         CreateScriptedDoubleWildMon(mission->species, mission->level, ITEM_NONE, species2, mission->level, ITEM_NONE);
         BattleSetup_StartScriptedDoubleWildBattle();
+        return;
+    }
+
+    if (mission->type == MISSION_TYPE_LEGENDARY)
+    {
+        CreateScriptedWildMon(mission->species, GetSiteMonLevel(mission), ITEM_NONE);
+        BattleSetup_StartLegendaryBattle();
         return;
     }
 
@@ -744,6 +878,7 @@ u16 MissionBoard_EndSiteBattle(void)
             result = SITE_RESULT_CALMED;
         break;
     case MISSION_TYPE_CALM_CATCH:
+    case MISSION_TYPE_LEGENDARY:
         if (caught)
             result = SITE_RESULT_CAUGHT;
         else if (beaten)
@@ -800,4 +935,73 @@ u16 MissionBoard_TakeDropItem(void)
         return FALSE;
     RemoveBagItem(mission->dropItem, 1);
     return TRUE;
+}
+
+// The Legendary Board opens with all 8 Gym Badges and Master Rank.
+u16 MissionBoard_IsLegendaryBoardOpen(void)
+{
+    u32 badge;
+
+    for (badge = FLAG_BADGE01_GET; badge <= FLAG_BADGE08_GET; badge++)
+    {
+        if (!FlagGet(badge))
+            return FALSE;
+    }
+    return GetCurrentRank() == MISSION_RANK_MASTER;
+}
+
+static bool32 IsLegendaryBoardMissionAvailable(u32 missionId)
+{
+    return sMissions[missionId].board == MISSION_BOARD_LEGENDARY && IsMissionAvailable(missionId);
+}
+
+// Finds the next available Legendary Board mission with an ID of VAR_0x8004 or more.
+// If found, returns TRUE, sets VAR_0x8004 to its ID and puts its title in {STR_VAR_1}.
+u16 MissionBoard_FindNextLegendaryMission(void)
+{
+    u32 missionId;
+
+    for (missionId = max(gSpecialVar_0x8004, MISSION_NONE + 1); missionId < MISSIONS_COUNT; missionId++)
+    {
+        if (IsLegendaryBoardMissionAvailable(missionId))
+        {
+            gSpecialVar_0x8004 = missionId;
+            StringCopy(gStringVar1, sMissions[missionId].title);
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+u16 MissionBoard_CountLegendaryMissions(void)
+{
+    u32 missionId, count = 0;
+
+    for (missionId = MISSION_NONE + 1; missionId < MISSIONS_COUNT; missionId++)
+    {
+        if (IsLegendaryBoardMissionAvailable(missionId))
+            count++;
+    }
+    return count;
+}
+
+// These three use VAR_0x8004 = mission ID (the Legendary Board has no slots).
+void MissionBoard_BufferIdDescription(void)
+{
+    BufferDescription(GetValidMission(gSpecialVar_0x8004));
+}
+
+void MissionBoard_BufferIdReward(void)
+{
+    BufferReward(GetValidMission(gSpecialVar_0x8004));
+}
+
+void MissionBoard_AcceptId(void)
+{
+    if (GetValidMission(gSpecialVar_0x8004) == NULL)
+        return;
+
+    VarSet(VAR_MISSION_ACTIVE, gSpecialVar_0x8004);
+    VarSet(VAR_MISSION_STATE, MISSION_STATE_IN_PROGRESS);
+    VarSet(VAR_MISSION_PROGRESS, 0);
 }

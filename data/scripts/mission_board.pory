@@ -12,6 +12,66 @@ script MissionBoard_EventScript_Sign {
     end
 }
 
+// The Legendary Board. Any active mission can also be handed in here.
+script MissionBoard_EventScript_LegendarySign {
+    lockall
+    call(MissionBoard_EventScript_TryRankUps)
+    if (var(VAR_MISSION_ACTIVE) != MISSION_NONE) {
+        call(MissionBoard_EventScript_ActiveMenu)
+    } else {
+        call(MissionBoard_EventScript_ChooseLegendaryMission)
+    }
+    releaseall
+    end
+}
+
+script(local) MissionBoard_EventScript_ChooseLegendaryMission {
+    specialvar(VAR_RESULT, MissionBoard_IsLegendaryBoardOpen)
+    if (var(VAR_RESULT) == FALSE) {
+        msgbox("LEGENDARY BOARD\pOnly trainers with all 8 Gym Badges\nand Master Rank may take these.", MSGBOX_DEFAULT)
+        closemessage
+        return
+    }
+    specialvar(VAR_RESULT, MissionBoard_CountLegendaryMissions)
+    if (var(VAR_RESULT) == 0) {
+        msgbox("LEGENDARY BOARD\pThere are no legendary missions\nright now.", MSGBOX_DEFAULT)
+        closemessage
+        return
+    }
+
+    message("LEGENDARY BOARD\nChoose a mission.")
+    waitmessage
+    setvar(VAR_0x8004, 1)
+    while {
+        specialvar(VAR_RESULT, MissionBoard_FindNextLegendaryMission)
+        if (var(VAR_RESULT) == FALSE) {
+            break
+        }
+        dynmultipush("{STR_VAR_1}", VAR_0x8004)
+        addvar(VAR_0x8004, 1)
+    }
+    dynmultipush("Exit", MISSION_NONE)
+    dynmultistack(0, 0, FALSE, 5, FALSE, 0, DYN_MULTICHOICE_CB_NONE)
+    closemessage
+
+    if (var(VAR_RESULT) == MISSION_NONE || var(VAR_RESULT) >= MISSIONS_COUNT) {
+        return
+    }
+
+    copyvar(VAR_0x8004, VAR_RESULT)
+    special(MissionBoard_BufferIdDescription)
+    msgbox(gStringVar4, MSGBOX_DEFAULT)
+    special(MissionBoard_BufferIdReward)
+    msgbox(gStringVar4, MSGBOX_DEFAULT)
+    msgbox("Accept this mission?", MSGBOX_YESNO)
+    if (var(VAR_RESULT) == YES) {
+        special(MissionBoard_AcceptId)
+        msgbox("Mission accepted!\nReturn to either board when it's done.", MSGBOX_DEFAULT)
+    }
+    closemessage
+    return
+}
+
 script(local) MissionBoard_EventScript_ChooseMission {
     special(MissionBoard_RefillSlots)
     special(MissionBoard_BufferRankStatus)
@@ -187,7 +247,7 @@ script MissionBoard_EventScript_Site {
             msgbox("The horde scattered!\nReport back to the mission board.", MSGBOX_DEFAULT)
         case SITE_RESULT_FAINTED:
             removeobject(VAR_LAST_TALKED)
-            msgbox("The {STR_VAR_1} fainted and was\ncarried off by its friends.\pIt should be back soon.\nLeave the area and return.", MSGBOX_DEFAULT)
+            msgbox("The {STR_VAR_1} fainted, then fled\nto recover.\pIt should be back soon.\nLeave the area and return.", MSGBOX_DEFAULT)
         default:
             msgbox("The {STR_VAR_1} is still here.\nTry again!", MSGBOX_DEFAULT)
     }

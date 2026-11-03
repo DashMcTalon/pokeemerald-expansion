@@ -13,7 +13,29 @@
 #define MISSION_CRAZED_PIKACHU    7
 #define MISSION_CALM_PIKACHU      8
 #define MISSION_HORDE_BUGS        9
-#define MISSIONS_COUNT            10
+// Legendary Board placeholders for testing. Replace these with your real legendary missions.
+// They're only offered while MISSION_ENABLE_TEST_LEGENDARIES is TRUE.
+#define MISSION_TEST_LEGEND_DIRECT  10
+#define MISSION_TEST_LEGEND_STEP_1  11
+#define MISSION_TEST_LEGEND_STEP_2  12
+#define MISSION_TEST_LEGEND_CHAINED 13
+#define MISSIONS_COUNT            14
+
+// Which board a mission appears on.
+#define MISSION_BOARD_MAIN         0 // Random missions, 3 at a time.
+#define MISSION_BOARD_LEGENDARY    1 // Lists every available mission. Needs all 8 badges and Master Rank.
+
+// Legendary levels to use: 50 for lesser legendaries on the main board, 75-90 on
+// the Legendary Board, and 100 for legendaries that need other missions first.
+// While this is TRUE, every legendary battle is level 5-7 instead, for testing.
+// Set it to FALSE before releasing the game.
+#define MISSION_LEGENDARY_TEST_LEVELS FALSE
+
+// Set to TRUE to put the "Test:" placeholder missions back on the Legendary Board.
+#define MISSION_ENABLE_TEST_LEGENDARIES FALSE
+
+// Most missions a mission can require before it's offered.
+#define MAX_REQUIRED_MISSIONS      4
 
 // One FLAG_MISSION_CLEARED flag exists for each mission, so IDs stop at 64.
 #define MAX_MISSIONS              64
@@ -25,6 +47,7 @@
 #define MISSION_TYPE_CRAZED        2 // Boosted boss at a mission site; can't be caught.
 #define MISSION_TYPE_CALM_CATCH    3 // Unlocked by a crazed mission; catch it at the site.
 #define MISSION_TYPE_HORDE         4 // Waves of double battles at a mission site, with no healing between.
+#define MISSION_TYPE_LEGENDARY     5 // Catch a legendary at a mission site. Fainting or running lets you retry.
 
 #define MISSION_STATE_NONE         0
 #define MISSION_STATE_IN_PROGRESS  1
