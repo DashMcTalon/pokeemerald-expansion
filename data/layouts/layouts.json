@@ -9343,6 +9343,16 @@
       "secondary_tileset": "gTileset_GenericBuilding",
       "border_filepath": "data/layouts/TestMap1_Interior1/border.bin",
       "blockdata_filepath": "data/layouts/TestMap1_Interior1/map.bin"
+    },
+    {
+      "id": "LAYOUT_FOREST_SHRINE",
+      "name": "ForestShrine_Layout",
+      "width": 50,
+      "height": 10,
+      "primary_tileset": "gTileset_General",
+      "secondary_tileset": "gTileset_Petalburg",
+      "border_filepath": "data/layouts/ForestShrine/border.bin",
+      "blockdata_filepath": "data/layouts/ForestShrine/map.bin"
     }
   ]
 }

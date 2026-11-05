@@ -1744,3 +1744,5 @@ EventScript_PalletTown_PlayersHouse_2F_TurnOnPC::
 	.include "data/maps/TestMap1/scripts.inc"
 
 	.include "data/maps/TestMap1_Interior1/scripts.inc"
+
+	.include "data/maps/ForestShrine/scripts.inc"
